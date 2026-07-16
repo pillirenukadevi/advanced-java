@@ -68,7 +68,7 @@ public class calculator{
 
         calculation(sc);
 
-        sc.nextLine(); // clear buffer
+        sc.nextLine();
         System.out.print("Receiver: ");
         sc.nextLine();
 
