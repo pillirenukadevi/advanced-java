@@ -1,0 +1,107 @@
+import java.sql.*;
+
+public class StudentPreparedStmtApp {
+
+    public static void main(String[] args) {
+
+        String url = "jdbc:mysql://localhost:3306/testdb";
+        String user = "testuser";
+        String password = "testpass";
+
+        try {
+            // Load Driver
+            Class.forName("com.mysql.cj.jdbc.Driver");
+
+            // Establish Connection
+            Connection con = DriverManager.getConnection(url, user, password);
+
+            // Create Student2 table
+            String createTable = "CREATE TABLE IF NOT EXISTS Student2 ("
+                    + "RollNo INT PRIMARY KEY, "
+                    + "Name VARCHAR(50), "
+                    + "Address VARCHAR(100))";
+
+            con.createStatement().executeUpdate(createTable);
+            System.out.println("Table created successfully.");
+
+            // Insert initial records
+            Statement stmt = con.createStatement();
+            stmt.executeUpdate("INSERT IGNORE INTO Student2 VALUES (1,'Ravi','Hyderabad')");
+            stmt.executeUpdate("INSERT IGNORE INTO Student2 VALUES (2,'Sita','Chennai')");
+            stmt.executeUpdate("INSERT IGNORE INTO Student2 VALUES (3,'Kiran','Bangalore')");
+
+            System.out.println("Initial records inserted.");
+
+            // Display initial records
+            System.out.println("\nInitial Records:");
+            displayRecords(con);
+
+            // Insert two new records
+            String insertSQL = "INSERT INTO Student2 (RollNo,Name,Address) VALUES (?,?,?)";
+
+            PreparedStatement insertStmt = con.prepareStatement(insertSQL);
+
+            insertStmt.setInt(1,4);
+            insertStmt.setString(2,"Meena");
+            insertStmt.setString(3,"Pune");
+            insertStmt.executeUpdate();
+
+            insertStmt.setInt(1,5);
+            insertStmt.setString(2,"Ramesh");
+            insertStmt.setString(3,"Mumbai");
+            insertStmt.executeUpdate();
+
+            System.out.println("Two new records inserted.");
+
+            // Update one record
+            String updateSQL = "UPDATE Student2 SET Address=? WHERE RollNo=?";
+
+            PreparedStatement updateStmt = con.prepareStatement(updateSQL);
+
+            updateStmt.setString(1,"Delhi");
+            updateStmt.setInt(2,2);
+            updateStmt.executeUpdate();
+
+            System.out.println("One record updated.");
+
+            // Delete one record
+            String deleteSQL = "DELETE FROM Student2 WHERE RollNo=?";
+
+            PreparedStatement deleteStmt = con.prepareStatement(deleteSQL);
+
+            deleteStmt.setInt(1,3);
+            deleteStmt.executeUpdate();
+
+            System.out.println("One record deleted.");
+
+            // Display final records
+            System.out.println("\nFinal Records:");
+            displayRecords(con);
+
+            con.close();
+
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void displayRecords(Connection con) throws SQLException {
+
+        String selectSQL = "SELECT * FROM Student2";
+
+        PreparedStatement pstmt = con.prepareStatement(selectSQL);
+
+        ResultSet rs = pstmt.executeQuery();
+
+        System.out.println("RollNo\tName\tAddress");
+
+        while(rs.next()) {
+
+            System.out.println(
+                    rs.getInt("RollNo") + "\t" +
+                    rs.getString("Name") + "\t" +
+                    rs.getString("Address")
+            );
+        }
+    }
+}
